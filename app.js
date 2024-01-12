@@ -63,6 +63,7 @@ async function main() {
 	await mongoose.connect(MONGO_URL);
 }
 
+<<<<<<< HEAD
 app.use((req, res, next) => {
 	res.locals.success = req.flash("success");
 	res.locals.error = req.flash("error");
@@ -82,6 +83,125 @@ app.get("/demouser", async (req, res) => {
 
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
+=======
+app.get("/", (req, res) => {
+	res.send("Root is working");
+});
+
+const validateListing = (req, res, next) => {
+	let { error } = listingSchema.validate(req.body);
+	if (error) {
+		let errMsg = error.details.map((el) => el.message).join(",");
+		throw new ExpressError(400, errMsg);
+	} else {
+		next();
+	}
+};
+
+const validateReview = (req, res, next) => {
+	let { error } = reviewSchema.validate(req.body);
+	if (error) {
+		let errMsg = error.details.map((el) => el.message).join(",");
+		throw new ExpressError(400, errMsg);
+	} else {
+		next();
+	}
+};
+
+//Index route - Shows all listings
+app.get(
+	"/listings",
+	wrapAsync(async (req, res) => {
+		const listings = await Listing.find({});
+		res.render("listings/index.ejs", { listings });
+	}),
+);
+
+//Create route
+app.get("/listings/new", (req, res) => {
+	res.render("listings/new.ejs");
+});
+
+app.post(
+	"/listings",
+	validateListing,
+	wrapAsync(async (req, res, next) => {
+		const newListing = new Listing(req.body.listing);
+		await newListing.save();
+		res.redirect("/listings");
+	}),
+);
+
+//Show route - Show all data of a particular listing
+app.get(
+	"/listings/:id",
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		const listing = await Listing.findById(id).populate("reviews");
+		// console.log(listing);
+		res.render("listings/show.ejs", { listing });
+	}),
+);
+
+//edit route
+app.get(
+	"/listings/:id/edit",
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		const listing = await Listing.findById(id);
+		res.render("listings/edit.ejs", { listing });
+	}),
+);
+
+app.patch(
+	"/listings/:id",
+	validateListing,
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+		res.redirect(`/listings/${id}`);
+	}),
+);
+
+//delete route
+app.delete(
+	"/listings/:id",
+	wrapAsync(async (req, res) => {
+		let { id } = req.params;
+		await Listing.findByIdAndDelete(id);
+		res.redirect("/listings");
+	}),
+);
+
+// Reviews Post route
+app.post(
+	"/listings/:id/reviews",
+	validateReview,
+	wrapAsync(async (req, res) => {
+		const listing = await Listing.findById(req.params.id);
+		let newReview = new Review(req.body.review);
+		//the req.body.review is the object given when the show.ejs review form is submitted
+		//this will add a new review to the reviews array
+		listing.reviews.push(newReview);
+		await newReview.save();
+		await listing.save();
+
+		res.redirect(`/listings/${listing._id}`);
+	}),
+);
+
+//Delete review route
+app.delete(
+	"/listings/:id/reviews/:reviewId",
+	wrapAsync(async (req, res) => {
+		let { id, reviewId } = req.params;
+		await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+		await Review.findByIdAndDelete(reviewId);
+
+		res.redirect(`/listings/${id}`);
+	}),
+);
+>>>>>>> 3cf36cc0954368fc2ee8eae22f9a705514cf1bd1
 
 app.all("*", (req, res, next) => {
 	next(new ExpressError(404, "Page not found"));
