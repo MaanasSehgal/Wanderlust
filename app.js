@@ -45,8 +45,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-app.use("/", userRouter);
-
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
@@ -68,6 +66,8 @@ app.use((req, res, next) => {
 	res.locals.error = req.flash("error");
 	next();
 });
+
+app.use("/", userRouter);
 
 app.get("/demouser", async (req, res) => {
 	let fakeUser = new User({
