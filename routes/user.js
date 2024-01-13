@@ -33,7 +33,7 @@ router.post(
 	"/login",
 	passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }),
 	wrapAsync(async (req, res) => {
-		res.flash("success", "Welcome to Wanderlust! You are logged in!");
+		req.flash("success", "Welcome to Wanderlust! You are logged in!");
 		res.redirect("/listings");
 	}),
 );
