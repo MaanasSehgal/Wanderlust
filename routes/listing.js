@@ -22,7 +22,6 @@ router.post(
 	"/",
 	validateListing,
 	isLoggedIn,
-	isOwner,
 	wrapAsync(async (req, res, next) => {
 		const newListing = new Listing(req.body.listing);
 		newListing.owner = req.user._id;

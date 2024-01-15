@@ -3,7 +3,7 @@ const { listingSchema, reviewSchema } = require("./schema");
 const ExpressError = require("./utils/ExpressError");
 
 module.exports.isLoggedIn = (req, res, next) => {
-	// console.log(req.path, "..", req.originalUrl)
+	// console.log(req.path, "..", req.originalUrl);
 	if (!req.isAuthenticated()) {
 		req.session.redirectUrl = req.originalUrl;
 		req.flash("error", "You must be logged in to create a listing!");
@@ -22,11 +22,13 @@ module.exports.saveRedirectUrl = (req, res, next) => {
 module.exports.isOwner = async (req, res, next) => {
 	let { id } = req.params;
 	let listing = await Listing.findById(id);
-	console.log(listing.owner);
-	if (listing.owner._id.equals(res.locals.currUser._id)) {
-		req.flash("error", "You are not the owner of this listing ");
-		res.redirect(`/listings/${id}`);
-	}
+	console.log("owner:", listing.owner._id, "currUser:", res.locals.currUser._id.toString());
+
+if (!listing.owner._id.equals(res.locals.currUser._id)) {
+    req.flash("error", "You are not the owner of this listing");
+    return res.redirect(`/listings/${id}`);
+}
+
 	next();
 };
 
