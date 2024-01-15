@@ -17,7 +17,7 @@ router.post(
 		//the req.body.review is the object given when the show.ejs review form is submitted
 		//this will add a new review to the reviews array
 		newReview.author = req.user._id;
-		console.log(newReview);
+		// console.log(newReview);
 		listing.reviews.push(newReview);
 
 		await newReview.save();
